@@ -1,6 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "@/firebase/client";
 import {
   autenticarUsuario,
   cerrarSesionUsuario,
@@ -36,6 +38,18 @@ export default function LoginExam() {
   const [error, setError] = useState("");
   const [usuario, setUsuario] = useState<AuthUser | null>(null);
 
+  // Al cargar la página, Firebase revisa si hay sesión guardada (LOCAL persistence)
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      if (firebaseUser) {
+        setUsuario({ email: firebaseUser.email ?? "" });
+      } else {
+        setUsuario(null);
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
   const tituloBoton = useMemo(() => {
     return cargando ? "Entrando..." : "Entrar";
   }, [cargando]);
@@ -62,7 +76,6 @@ export default function LoginExam() {
       const credencial = await autenticarUsuario(correo, contrasena);
       setUsuario({ email: credencial.user.email ?? correo });
     } catch (err: unknown) {
-      console.log("Error en el login:", err);
       const codigo =
         err !== null &&
         typeof err === "object" &&
