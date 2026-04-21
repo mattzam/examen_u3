@@ -62,6 +62,7 @@ export default function LoginExam() {
       const credencial = await autenticarUsuario(correo, contrasena);
       setUsuario({ email: credencial.user.email ?? correo });
     } catch (err: unknown) {
+      console.log("Error en el login:", err);
       const codigo =
         err !== null &&
         typeof err === "object" &&
